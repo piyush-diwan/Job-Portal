@@ -7,43 +7,24 @@ import Navbar from "../shared/Navbar";
 import { useSelector, useDispatch } from "react-redux";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { toast } from "sonner";
-import { setSingleJob } from "@/redux/jobSlice"; 
+import { setSingleJob } from "@/redux/jobSlice";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 export const UpdateJob = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const { companies } = useSelector((store) => store.company);
   const { allAdminJobs, singleJob } = useSelector((store) => store.job);
-
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
-      title: "",
-      description: "",
-      requirements: "",
-      salary: "",
-      location: "",
-      jobType: "",
-      experience: "",
-      position: "",
-      companyId: "",
+      title: "", description: "", requirements: "", salary: "", location: "", jobType: "", experience: "", position: "", companyId: "",
     }
   });
-
   const selectedCompanyId = watch("companyId");
 
-  // 2. सुरक्षा के लिए: अगर singleJob में इस वक्त डेटा नहीं है या कोई दूसरा पुराना जॉब है,
-  // तो हम 'allAdminJobs' में से इस ID वाली जॉब को ढूंढकर 'singleJob' में सेट कर देंगे।
   useEffect(() => {
     if (!singleJob || singleJob._id !== id) {
       const currentJob = allAdminJobs?.find((item) => item._id === id);
@@ -76,7 +57,6 @@ export const UpdateJob = () => {
     }
   };
 
-  // Submit Updated Data
   const onSubmit = async (data) => {
     try {
       setLoading(true);
@@ -91,24 +71,15 @@ export const UpdateJob = () => {
         position: Number(data.position),
         companyId: data.companyId,
       };
-
-      const res = await axios.put(
-        `${JOB_API_END_POINT}/update/${id}`,
-        updatedData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const res = await axios.put(`${JOB_API_END_POINT}/update/${id}`, updatedData, {
+          headers: { "Content-Type": "application/json" },
           withCredentials: true,
-        },
-      );
-
+      });
       if (res.data.success) {
         toast.success(res.data.message || "Job Updated Successfully");
         navigate("/admin/jobs");
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -116,160 +87,118 @@ export const UpdateJob = () => {
   };
 
   const currentCompany = companies.find(c => c._id === selectedCompanyId);
+  
+  const inputClass = "rounded-none border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none p-3 font-bold uppercase text-xs text-black bg-white w-full mt-2";
+  const labelClass = "font-black uppercase text-sm block";
 
   return (
-    <>
+    <div className="min-h-screen bg-[#f0f0f0] pb-10">
       <Navbar />
-      <div className="max-w-3xl mx-auto p-5">
-        <h1 className="text-3xl font-bold mb-6">Update Job</h1>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Title */}
-          <div>
-            <label className="block mb-1 font-medium">Job Title</label>
-            <input
-              type="text"
-              {...register("title", { required: "Title is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block mb-1 font-medium">Description</label>
-            <textarea
-              rows={5}
-              {...register("description", { required: "Description is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
-          </div>
-
-          {/* Requirements */}
-          <div>
-            <label className="block mb-1 font-medium">Requirements</label>
-            <input
-              type="text"
-              placeholder="React, Node.js, MongoDB"
-              {...register("requirements", { required: "Requirements are required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.requirements && <p className="text-red-500 text-sm">{errors.requirements.message}</p>}
-          </div>
-
-          {/* Salary */}
-          <div>
-            <label className="block mb-1 font-medium">Salary</label>
-            <input
-              type="number"
-              {...register("salary", { required: "Salary is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.salary && <p className="text-red-500 text-sm">{errors.salary.message}</p>}
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className="block mb-1 font-medium">Location</label>
-            <input
-              type="text"
-              {...register("location", { required: "Location is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
-          </div>
-
-          {/* Job Type */}
-          <div>
-            <label className="block mb-1 font-medium">Job Type</label>
-            <select
-              {...register("jobType", { required: "Job type is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white"
-            >
-              <option value="">Select Job Type</option>
-              <option value="Full-Time">Full-Time</option>
-              <option value="Part-Time">Part-Time</option>
-              <option value="Internship">Internship</option>
-              <option value="Remote">Remote</option>
-            </select>
-            {errors.jobType && <p className="text-red-500 text-sm">{errors.jobType.message}</p>}
-          </div>
-
-          {/* Experience */}
-          <div>
-            <label className="block mb-1 font-medium">Experience Level (in years)</label>
-            <input
-              type="number"
-              {...register("experience", { required: "Experience is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.experience && <p className="text-red-500 text-sm">{errors.experience.message}</p>}
-          </div>
-
-          {/* Position */}
-          <div>
-            <label className="block mb-1 font-medium">Number of Positions</label>
-            <input
-              type="number"
-              {...register("position", { required: "Position is required" })}
-              className="w-full border p-3 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            {errors.position && <p className="text-red-500 text-sm">{errors.position.message}</p>}
-          </div>
-
-          {/* Company Dropdown list */}
-          <div>
-            <label className="block mb-2 font-medium">Select Company</label>
-            {companies.length > 0 ? (
-              <Select 
-                onValueChange={selectChangeHandler} 
-                value={currentCompany ? currentCompany.name.toLowerCase() : ""}
+      <div className="max-w-4xl mx-auto my-10 px-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-10 border-[3px] border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+          <div className='flex flex-col sm:flex-row sm:items-center gap-5 border-b-[3px] border-black pb-6 mb-8'>
+              <button 
+                  type="button" 
+                  onClick={() => navigate("/admin/jobs")} 
+                  className="w-fit rounded-none border-[3px] border-black bg-white text-black font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-none px-4 py-2 flex items-center gap-2"
               >
-                <SelectTrigger className="w-full border p-3 h-12 rounded focus:ring-1 focus:ring-gray-400 bg-white">
-                  <SelectValue placeholder="Select a Company" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {companies.map((company) => (
-                      <SelectItem key={company._id} value={company?.name?.toLowerCase()}>
-                        {company.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            ) : (
-              <p className="text-xs text-red-600 font-bold">*Please register a company first.</p>
-            )}
-            
-            <input 
-              type="hidden" 
-              {...register("companyId", { required: "Company is required" })} 
-            />
-            {errors.companyId && <p className="text-red-500 text-sm mt-1">{errors.companyId.message}</p>}
+                  <ArrowLeft className="w-5 h-5" />
+                  <span>Back</span>
+              </button>
+              <h1 className='font-black uppercase text-2xl md:text-3xl tracking-tighter'>Update Job</h1>
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-colors w-full sm:w-auto flex items-center justify-center"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className={labelClass}>Job Title</label>
+              <input type="text" {...register("title", { required: "Title is required" })} className={inputClass} />
+              {errors.title && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.title.message}</p>}
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className={labelClass}>Description</label>
+              <textarea rows={4} {...register("description", { required: "Description is required" })} className={`${inputClass} resize-none`} />
+              {errors.description && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.description.message}</p>}
+            </div>
+
+            <div>
+              <label className={labelClass}>Requirements</label>
+              <input type="text" placeholder="REACT, NODE.JS, MONGODB" {...register("requirements", { required: "Requirements are required" })} className={inputClass} />
+              {errors.requirements && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.requirements.message}</p>}
+            </div>
+            <div>
+              <label className={labelClass}>Salary</label>
+              <input type="number" {...register("salary", { required: "Salary is required" })} className={inputClass} />
+              {errors.salary && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.salary.message}</p>}
+            </div>
+            <div>
+              <label className={labelClass}>Location</label>
+              <input type="text" {...register("location", { required: "Location is required" })} className={inputClass} />
+              {errors.location && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.location.message}</p>}
+            </div>
+            <div>
+              <label className={labelClass}>Job Type</label>
+              <select {...register("jobType", { required: "Job type is required" })} className={inputClass}>
+                <option value="">SELECT JOB TYPE</option>
+                <option value="Full-Time">FULL-TIME</option>
+                <option value="Part-Time">PART-TIME</option>
+                <option value="Internship">INTERNSHIP</option>
+                <option value="Remote">REMOTE</option>
+              </select>
+              {errors.jobType && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.jobType.message}</p>}
+            </div>
+            <div>
+              <label className={labelClass}>Experience Level (in years)</label>
+              <input type="number" {...register("experience", { required: "Experience is required" })} className={inputClass} />
+              {errors.experience && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.experience.message}</p>}
+            </div>
+            <div>
+              <label className={labelClass}>Number of Positions</label>
+              <input type="number" {...register("position", { required: "Position is required" })} className={inputClass} />
+              {errors.position && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.position.message}</p>}
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className={labelClass}>Select Company</label>
+              {companies.length > 0 ? (
+                <div className="mt-2">
+                    <Select onValueChange={selectChangeHandler} value={currentCompany ? currentCompany.name.toLowerCase() : ""}>
+                        <SelectTrigger className="w-full h-12 rounded-none border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold uppercase text-xs focus:ring-0 bg-white">
+                            <SelectValue placeholder="SELECT A COMPANY" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-none border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
+                            <SelectGroup>
+                            {companies.map((company) => (
+                                <SelectItem key={company._id} value={company?.name?.toLowerCase()} className="font-bold uppercase text-xs focus:bg-black focus:text-white rounded-none cursor-pointer">
+                                {company.name}
+                                </SelectItem>
+                            ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+              ) : (
+                <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">*Please register a company first.</p>
+              )}
+              <input type="hidden" {...register("companyId", { required: "Company is required" })} />
+              {errors.companyId && <p className="text-white bg-[#F83002] border-[2px] border-black font-bold uppercase text-[10px] p-1 mt-1 w-fit">{errors.companyId.message}</p>}
+            </div>
+          </div>
+
+          <div className="mt-10 border-t-[3px] border-black pt-6">
             {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Please wait
-              </>
+                <button disabled className="w-full flex items-center justify-center rounded-none border-[3px] border-black bg-gray-300 text-black font-black uppercase py-4 opacity-100 text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"> 
+                    <Loader2 className='mr-2 h-5 w-5 animate-spin' /> 
+                    WAIT... 
+                </button>
             ) : (
-              "Update Job"
+                <button type="submit" className="w-full rounded-none border-[3px] border-black bg-black text-white font-black uppercase shadow-[6px_6px_0px_0px_rgba(248,48,2,1)] hover:bg-[#F83002] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-none py-4 text-xl tracking-widest">
+                    Update Job
+                </button>
             )}
-          </button>
+          </div>
         </form>
       </div>
-    </>
+    </div>
   );
 };

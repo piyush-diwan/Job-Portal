@@ -15,7 +15,7 @@ import PostJob from "./components/admin/PostJob";
 import Applicants from "./components/admin/Applicants";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import { UpdateJob } from "./components/admin/UpdateJob";
-
+import SavedJob from "./components/SavedJob";
 const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -50,6 +50,14 @@ const appRouter = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Browse />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/saved-jobs",
+    element: (
+      <ProtectedRoute>
+        <SavedJob />
       </ProtectedRoute>
     ),
   },

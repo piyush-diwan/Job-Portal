@@ -42,7 +42,15 @@ app.get("/", (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    connectDB();
-    console.log(`Server running at port ${PORT}`);
-})
+// 1. Database connection globally call karo
+connectDB();
+
+// 2. Agar deployment Vercel par NAHI hai (yani Render ya Local h), toh listen karo
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running at port ${PORT}`);
+    });
+}
+
+// 3. Vercel ke serverless functions ke liye app export karna zaroori hai
+export default app;

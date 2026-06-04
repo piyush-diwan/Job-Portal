@@ -8,7 +8,7 @@ export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
         console.log(req.body);
-         
+
         if (!fullname || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
@@ -34,8 +34,8 @@ export const register = async (req, res) => {
             phoneNumber,
             password: hashedPassword,
             role,
-            profile:{
-                profilePhoto:cloudResponse.secure_url,
+            profile: {
+                profilePhoto: cloudResponse.secure_url,
             }
         });
 
@@ -50,7 +50,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-        
+
         if (!email || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
@@ -93,7 +93,7 @@ export const login = async (req, res) => {
             profile: user.profile
         }
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
+        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "none", secure: true }).json({
             message: `Welcome back ${user.fullname}`,
             user,
             success: true
@@ -104,7 +104,12 @@ export const login = async (req, res) => {
 }
 export const logout = async (req, res) => {
     try {
-        return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+        return res.status(200).cookie("token", "", {
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true
+        }).json({
             message: "Logged out successfully.",
             success: true
         })
@@ -116,7 +121,7 @@ export const logout = async (req, res) => {
 //     try {
 //         const { fullname, email, phoneNumber, bio, skills } = req.body;
 //         console.log(req.body);
-        
+
 //         const file = req.file;
 //         // cloudinary ayega idhar
 //         const fileUri = getDataUri(file);
@@ -141,7 +146,7 @@ export const logout = async (req, res) => {
 //         if(phoneNumber)  user.phoneNumber = phoneNumber
 //         if(bio) user.profile.bio = bio
 //         if(skills) user.profile.skills = skillsArray
-      
+
 //         // resume comes later here...
 //         if(cloudResponse){
 //             user.profile.resume = cloudResponse.secure_url // save the cloudinary url
@@ -172,7 +177,7 @@ export const logout = async (req, res) => {
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
-        
+
         // 1. Handle File only if it exists
         const file = req.file;
         let cloudResponse = null;
@@ -187,7 +192,7 @@ export const updateProfile = async (req, res) => {
             skillsArray = skills.split(",");
         }
 
-        const userId = req.id; 
+        const userId = req.id;
         let user = await User.findById(userId);
 
         if (!user) {
@@ -203,7 +208,7 @@ export const updateProfile = async (req, res) => {
         if (phoneNumber) user.phoneNumber = phoneNumber;
         if (bio) user.profile.bio = bio;
         if (skills) user.profile.skills = skillsArray;
-      
+
         // 3. Only update resume if a new file was uploaded
         if (cloudResponse) {
             user.profile.resume = cloudResponse.secure_url;
